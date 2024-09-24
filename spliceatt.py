@@ -17,7 +17,7 @@ att = {}
 
 
 
-window_size = (16, 16)  # Define your window size
+window_size = (16, 16) 
 for name, param in weights.items():
     if any(layer in name for layer in ['.0', '15', '31']) and (
         name.endswith('self_attn.q_proj.weight') or 
@@ -35,7 +35,6 @@ weights = att[model]
 
 
 def extract_exp_mantissa(fp8_tensor):
-    # Ensure the tensor is of float8_e4m3fn type
     if fp8_tensor.dtype != torch.float8_e4m3fn:
         raise ValueError("Input tensor must be of type torch.float8_e4m3fn")
 
@@ -47,7 +46,6 @@ def extract_exp_mantissa(fp8_tensor):
     mantissa_mask = 0b00000111  # 3 bits mask for mantissa
     exp_mask = 0b00001111       # 4 bits mask for exponent
 
-    # Extract mantissa and exponent using bitwise operations
     mantissas = int_repr & mantissa_mask
     exponents = (int_repr >> 3) & exp_mask
 
@@ -69,17 +67,11 @@ def max_convolution(weights, window_size=(16, 16)):
 
     for i in range(output_shape[0]):
         for j in range(output_shape[1]):
-            # Define the current window
             current_window = weights[i:i + k_height, j:j + k_width]
             
             # Extract mantissas from the current window
             max_mantissa, exp = extract_exp_mantissa(current_window)
-            # print(max_mantissa)
-            # print(max_mantissa)
-            # print(exp)
-            # max_val, max_ind = max_mantissa.max(dim=0)  # Max along the correct dimension
-            
-            # Store the max mantissa in the output tensor
+    
             max_mantissas_output[i, j] = max_mantissa.item()
 
             cor_exp_output[i, j] = exp.item()  # Get the corresponding exponent
@@ -95,5 +87,5 @@ mantissas_flat = mantissas.numpy().flatten()
 exps_flat = exps.numpy().flatten()
 
 with open('result.txt', 'w') as f:
-    for value, exp in zip(mantissas_flat, exps_flat):  # Use zip to iterate over both arrays
-        f.write(f"{exp} {value}\n")  # Write each value on a new line
+    for value, exp in zip(mantissas_flat, exps_flat):  
+        f.write(f"{exp} {value}\n")  
