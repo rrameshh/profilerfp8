@@ -39,14 +39,16 @@ for name, param in weights.items():
 #     print(f"{name}: {mlp_weights[name].shape}")
 
 # Create a directory to save the weights
-save_dir = "saved_weights"
-os.makedirs(save_dir, exist_ok=True)
+# save_dir = "saved_weights"
+# os.makedirs(save_dir, exist_ok=True)
 
 # def sparsity(weight):
 
-
+filtered_weights = {name: weight for name, weight in weights.items() if any(x in name for x in ["0", "15", "31"])}
 def analyze_and_save_weights(weights, layer_type):
-    for name, weight in weights.items():
+    for name, weight in filtered_weights.items():
+        layer_dir = "{name}"
+        os.makedirs(layer_dir, exist_ok=True)
 
         if weight.dtype == torch.float8_e4m3fn:
             weight = weight.to(torch.float32)
@@ -65,7 +67,7 @@ def analyze_and_save_weights(weights, layer_type):
         plt.xlabel("Weight Value")
         plt.ylabel("Frequency")
         plt.grid()
-        plt.savefig(os.path.join(save_dir, f"histogram_{layer_type}_{name.replace('/', '_')}.png"))
+        plt.savefig(os.path.join(layer_dir, f"histogram_{layer_type}_{name.replace('/', '_')}.png"))
         plt.close()  # Close the figure to save memory
 
         # Low-order magnitude analysis
@@ -73,7 +75,7 @@ def analyze_and_save_weights(weights, layer_type):
         print(f"Low-order magnitudes in {name}: {low_order_count} ({low_order_count / total_elements:.4f})")
 
         # Save weights
-        torch.save(weight, os.path.join(save_dir, f"{layer_type}_{name.replace('/', '_')}.pt"))
+        # torch.save(weight, os.path.join(save_dir, f"{layer_type}_{name.replace('/', '_')}.pt"))
 
 # Analyze and save attention weights
 print("Analyzing and saving attention weights:")
